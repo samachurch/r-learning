@@ -33,25 +33,25 @@ Bootstraps are easy to generate!
 
 A **bootstrap** mimics large-scale sampling by resampling many times from the sample itself. It is done WITH replacement,     otherwise it would just mimic the sample and nothing would differ.
 
-**First**, make sure you've loaded the infer package.
+**First** make sure you've loaded infer!
 ```{r}
 library(infer)
 ```
 
-**Second**, use specify to clarify the dependent and independent varaibles.
+**Second** use specify to describe the relationship between what you're testing.
 ```{r}
 bootstrap <- data_here |>
   specify(dependent_var ~ independent_var)
 ```
   
-**Third**, now we can actually do the work to generate the bootstrap.
+**Third** we can actually generate the bootstrap.
 ```{r}
 bootstrap <- data_here |>
   specify(dependent_var ~ independent_var) |>
   generate(reps = 1000, type = "bootstrap")
 ```
 
-**Fourth**, now that we've done the work to actually generate the bootstrap, we can do differnet things with it.
+**Fourth** we can do a lot of different calculations with it!
 
 For example, if we're looking for the ATE, we can calculate that.
 ```{r}
