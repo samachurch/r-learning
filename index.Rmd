@@ -1,7 +1,7 @@
 ---
-title: "Gov 50 Final Project"
-author: "Your Name Here"
-description: "My final project"
+title: "Sam Is Learning R"
+author: "Sam Church"
+description: "Final Study Review"
 output:
   distill::distill_article:
     self_contained: false
@@ -9,6 +9,6 @@ output:
 
 
 
-## Project thoughts
+## Distill Package
 
-I am interested in exploring data related to...
+Distill is Useful:
