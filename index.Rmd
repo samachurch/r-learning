@@ -33,18 +33,18 @@ Bootstraps are easy to generate!
 
 A **bootstrap** mimics large-scale sampling by resampling many times from the sample itself. It is done WITH replacement,     otherwise it would just mimic the sample and nothing would differ.
 
-**First**, make sure you've loaded the infer package
+**First**, make sure you've loaded the infer package.
 ```{r}
 library(infer)
 ```
 
-**Second**, use specify to clarify the dependent and independent varaibles:
+**Second**, use specify to clarify the dependent and independent varaibles.
 ```{r}
 bootstrap <- data_here |>
   specify(dependent_var ~ independent_var)
 ```
   
-**Third**, now we can actually do the work to generate the bootstrap:
+**Third**, now we can actually do the work to generate the bootstrap.
 ```{r}
 bootstrap <- data_here |>
   specify(dependent_var ~ independent_var) |>
@@ -53,7 +53,7 @@ bootstrap <- data_here |>
 
 **Fourth**, now that we've done the work to actually generate the bootstrap, we can do differnet things with it.
 
-For example, if we're looking for the ATE, we can calculate that:
+For example, if we're looking for the ATE, we can calculate that.
 ```{r}
 bootstrap <- data_here |>
   specify(dependent_var ~ independent_var) |>
@@ -61,7 +61,7 @@ bootstrap <- data_here |>
   calculate(stat = "diff in means", c("Treated", "Control"))
 ```
 
-We can also just calculate the mean:
+We can also just calculate the mean.
 
 ```{r}
 bootstrap <- data_here |>
