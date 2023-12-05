@@ -6,9 +6,76 @@ output:
   distill::distill_article:
     self_contained: false
 ---
+##Setup
+
+for the purposes of examples:
+
+```{r}
+library(tidyverse)
+```
+
+fake data creation:
+
+```{r}
+data_here <- read_csv("data/union.csv")
+
+data_here <- data_here |>
+  mutate(
+    independent_var = if_else(union_now == 1, "Treated", "Control"),
+    dependent_var = rr
+  )
+```
+
+
+##Bootstrap
+
+Bootstraps are easy to generate!
+
+A **bootstrap** mimics large-scale sampling by resampling many times from the sample itself. It is done WITH replacement, otherwise it would just mimic the sample and nothing would differ.
+
+1. make sure you've loaded the infer package
+```{r}
+library(infer)
+```
+
+2. use specify to clarify the dependent and independent varaibles:
+```{r}
+bootstrap <- data_here |>
+  specify(dependent_var ~ independent_var)
+```
+
+3. now we can actually do the work to generate the bootstrap:
+```{r}
+bootstrap <- data_here |>
+  specify(dependent_var ~ independent_var) |>
+  generate(reps = 1000, type = "bootstrap")
+```
+
+4. now that we've done the work to actually generate the bootstrap, we can do differnet things with it.
+
+A. For example, if we're looking for the ATE, we can calculate that:
+```{r}
+bootstrap <- data_here |>
+  specify(dependent_var ~ independent_var) |>
+  generate(reps = 1000, type = "bootstrap") |>
+  calculate(stat = "diff in means", c("Treated", "Control"))
+```
+
+B. We can also just calculate the mean:
+
+```{r}
+bootstrap <- data_here |>
+  specify(response = dependent_var) |>
+  ##when doing calculations involving just ONE VARIABLE, change the specify plank to clarify what variable you're referencing!
+  generate(reps = 1000, type = "bootstrap") |>
+  calculate(stat = "mean")
+```
 
 
 
-## Distill Package
 
-Distill is Useful:
+
+
+
+
+
