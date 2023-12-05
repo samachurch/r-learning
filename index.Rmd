@@ -33,25 +33,25 @@ data_here <- data_here |>
 
   A **bootstrap** mimics large-scale sampling by resampling many times from the sample itself. It is done WITH replacement,     otherwise it would just mimic the sample and nothing would differ.
 
-  1. make sure you've loaded the infer package
+  1 make sure you've loaded the infer package
 ```{r}
 library(infer)
 ```
 
-  2. use specify to clarify the dependent and independent varaibles:
+  2 use specify to clarify the dependent and independent varaibles:
 ```{r}
 bootstrap <- data_here |>
   specify(dependent_var ~ independent_var)
 ```
   
-  3. now we can actually do the work to generate the bootstrap:
+  3 now we can actually do the work to generate the bootstrap:
 ```{r}
 bootstrap <- data_here |>
   specify(dependent_var ~ independent_var) |>
   generate(reps = 1000, type = "bootstrap")
 ```
 
-  4. now that we've done the work to actually generate the bootstrap, we can do differnet things with it.
+  4 now that we've done the work to actually generate the bootstrap, we can do differnet things with it.
 
   A. For example, if we're looking for the ATE, we can calculate that:
 ```{r}
