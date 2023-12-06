@@ -197,7 +197,7 @@ but that's lowkey really overwhelming so we can use the select function to just 
 
 
 ```{r}
-glance(party_analysis) |>
+glance(linear_cor) |>
   select(r.squared) 
 
 ##if you really want to be pretty, you can knit the r squared value, but im lazy:
