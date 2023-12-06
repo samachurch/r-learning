@@ -80,10 +80,130 @@ bootstrap <- data_here |>
 ```
 
 
+## ATEs
+
+There are **multiple** ways to calcualte the estimated treatment effect.
+
+**First** you can use the group by/mutate/summarize method:
+
+```{r}
+ATE <- data_here |>
+  group_by(independent_var) |>
+  ##group by the variable representing if an individual has been treated
+  summarize(
+    mean = mean(dependent_var, na.rm = TRUE)
+  ##calculate the mean for each group's output variable, if there are missing values, na.rm = TRUE is how you exlcude them from calculations 
+  ) |>
+  pivot_wider(
+    names_from = independent_var,
+    values_from = mean
+  ##this makes the table longer, so you can more clearly see the means for each group
+  ) |>
+  mutate(
+    ATE = `Treated` - `Control`
+  ##this calculates the difference in means between the treated and control group!
+  )
+  
+```
+
+
+**OR**, alternatively, you can use the infer method to do it much quicker:
+
+```{r}
+ATE_Infer <- data_here |>
+  specify(dependent_var ~ independent_var) |>
+  ##specify the relation you're trying to test, the dependent variable, then tilde, then the independent var!
+  calculate("diff in means", order = c("Treated", "Control"))
+  ##calculate the order in which you want to calculate the differnece, usually it's treated - control.
+```
 
 
 
+## Permutation Tests, Confidence Intervals, and Statistical Significance
 
+A **permutation** test evaluates whether or not the null hypothesis is reasonable. Essentially, a permutation test randomly switches the label on each piece of data to either put it in the control or treatment group despite whether or not it is actually a member of that category. Then, it determines whether or not their is a trend in each group. If there is not a trend, then then null hypothesis is likely false because the original result cannot be recreated through randomization.
+
+Performing a permutation test is easy:
+
+again, make sure you've loaded infer:
+
+```{r}
+library(infer)
+```
+
+
+then, we can use the same framework established earlier, instead specifying a permutation test. Another way to clarify we want a permutation test is when one is asked to visualize the **null distribution**, which is the end result of a permutation test.
+
+
+```{r}
+null_dist <- data_here |>
+  specify(dependent_var ~ independent_var) |>
+  hypothesize(null = "independence") |>
+  ##because we're trying to test if one variable has an effect on the other, the null hypothesis, if there is no relation,        would be that they are independent.
+  generate(reps = 1000, type = "permute") |>
+  ##specify that we want a PERMUTATION test
+  calculate(stat = "diff in means", order = c("Treated", "Control"))
+```
+
+
+if we want, we can even **visualize** what the null distribution looks like:
+
+```{r}
+null_dist |>
+   visualize()
+```
+
+
+to test if there is a statistically significant relationship in our data, we would calculate a p-value to see how likely our data is to result in null distribution. If the p-value is less than our significance level (alpha) we would **REJECT** our null hypothesis, basically meaning there it is very unikely for there to **not** be a signficiant relation between the variables being tested.
+
+```{r}
+ate_pval <- null_dist |>
+  get_p_value(obs_stat = ATE_Infer, direction = "both")
+
+```
+
+
+if we want to go a step further, we can even shade the p-value on the null distribution to visually demonstrate how likely it is for the null distribution to be an accurate representation of our data relationship!
+
+```{r}
+null_dist |>
+  visualize() +
+  shade_p_value(obs_stat = ATE_Infer, direction = "both")
+```
+
+
+## Correlation Calculations
+
+it's really easier to calculate the linear relationship between two variables:
+
+```{r}
+linear_cor <- lm(dependent_var ~ independent_var, data = data_here)
+```
+
+if we want more specific info from that linear test, we can use the broom framework:
+
+```{r}
+library(broom)
+```
+
+the glance function gives us a ton of good stuff!
+
+```{r}
+glance(linear_cor)
+```
+
+
+but that's lowkey really overwhelming so we can use the select function to just get the r square which, tbh, is the only value i actually understand anyway:
+
+
+```{r}
+glance(party_analysis) |>
+  select(r.squared) 
+
+##if you really want to be pretty, you can knit the r squared value, but im lazy:
+##|>
+##knitr::kable(col.names = "R Squared")
+```
 
 
 

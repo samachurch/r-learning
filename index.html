@@ -115,7 +115,7 @@ code span.wa { color: #5e5e5e; font-style: italic; } /* Warning */
   <!--/radix_placeholder_rmarkdown_metadata-->
   
   <script type="text/json" id="radix-resource-manifest">
-  {"type":"character","attributes":{},"value":["data/union.csv","index_files/anchor-4.2.2/anchor.min.js","index_files/bowser-1.9.3/bowser.min.js","index_files/distill-2.2.21/template.v2.js","index_files/header-attrs-2.17/header-attrs.js","index_files/header-attrs-2.24/header-attrs.js","index_files/jquery-3.6.0/jquery-3.6.0.js","index_files/jquery-3.6.0/jquery-3.6.0.min.js","index_files/jquery-3.6.0/jquery-3.6.0.min.map","index_files/popper-2.6.0/popper.min.js","index_files/tippy-6.2.7/tippy-bundle.umd.min.js","index_files/tippy-6.2.7/tippy-light-border.css","index_files/tippy-6.2.7/tippy.css","index_files/tippy-6.2.7/tippy.umd.min.js","index_files/webcomponents-2.0.0/webcomponents.js"]}
+  {"type":"character","attributes":{},"value":["data/union.csv","index_files/anchor-4.2.2/anchor.min.js","index_files/bowser-1.9.3/bowser.min.js","index_files/distill-2.2.21/template.v2.js","index_files/figure-html5/unnamed-chunk-12-1.png","index_files/header-attrs-2.17/header-attrs.js","index_files/header-attrs-2.24/header-attrs.js","index_files/jquery-3.6.0/jquery-3.6.0.js","index_files/jquery-3.6.0/jquery-3.6.0.min.js","index_files/jquery-3.6.0/jquery-3.6.0.min.map","index_files/popper-2.6.0/popper.min.js","index_files/tippy-6.2.7/tippy-bundle.umd.min.js","index_files/tippy-6.2.7/tippy-light-border.css","index_files/tippy-6.2.7/tippy.css","index_files/tippy-6.2.7/tippy.umd.min.js","index_files/webcomponents-2.0.0/webcomponents.js"]}
   </script>
   <!--radix_placeholder_navigation_in_header-->
   <!--/radix_placeholder_navigation_in_header-->
@@ -1604,6 +1604,75 @@ code span.wa { color: #5e5e5e; font-style: italic; } /* Warning */
 <span>  <span class='co'>##when doing calculations involving just ONE VARIABLE, change the specify plank to clarify what variable you're referencing!</span></span>
 <span>  <span class='fu'><a href='https://infer.tidymodels.org/reference/generate.html'>generate</a></span><span class='op'>(</span>reps <span class='op'>=</span> <span class='fl'>1000</span>, type <span class='op'>=</span> <span class='st'>"bootstrap"</span><span class='op'>)</span> <span class='op'>|&gt;</span></span>
 <span>  <span class='fu'><a href='https://infer.tidymodels.org/reference/calculate.html'>calculate</a></span><span class='op'>(</span>stat <span class='op'>=</span> <span class='st'>"mean"</span><span class='op'>)</span></span></code></pre>
+</div>
+</div>
+<h2 id="ates">ATEs</h2>
+<p>There are <strong>multiple</strong> ways to calcualte the estimated treatment effect.</p>
+<p><strong>First</strong> you can use the group by/mutate/summarize method:</p>
+<div class="layout-chunk" data-layout="l-body">
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span><span class='va'>ATE</span> <span class='op'>&lt;-</span> <span class='va'>data_here</span> <span class='op'>|&gt;</span></span>
+<span>  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/group_by.html'>group_by</a></span><span class='op'>(</span><span class='va'>independent_var</span><span class='op'>)</span> <span class='op'>|&gt;</span></span>
+<span>  <span class='co'>##group by the variable representing if an individual has been treated</span></span>
+<span>  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/summarise.html'>summarize</a></span><span class='op'>(</span></span>
+<span>    mean <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/mean.html'>mean</a></span><span class='op'>(</span><span class='va'>dependent_var</span>, na.rm <span class='op'>=</span> <span class='cn'>TRUE</span><span class='op'>)</span></span>
+<span>  <span class='co'>##calculate the mean for each group's output variable, if there are missing values, na.rm = TRUE is how you exlcude them from calculations </span></span>
+<span>  <span class='op'>)</span> <span class='op'>|&gt;</span></span>
+<span>  <span class='fu'><a href='https://tidyr.tidyverse.org/reference/pivot_wider.html'>pivot_wider</a></span><span class='op'>(</span></span>
+<span>    names_from <span class='op'>=</span> <span class='va'>independent_var</span>,</span>
+<span>    values_from <span class='op'>=</span> <span class='va'>mean</span></span>
+<span>  <span class='co'>##this makes the table longer, so you can more clearly see the means for each group</span></span>
+<span>  <span class='op'>)</span> <span class='op'>|&gt;</span></span>
+<span>  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/mutate.html'>mutate</a></span><span class='op'>(</span></span>
+<span>    ATE <span class='op'>=</span> <span class='va'>`Treated`</span> <span class='op'>-</span> <span class='va'>`Control`</span></span>
+<span>  <span class='co'>##this calculates the difference in means between the treated and control group!</span></span>
+<span>  <span class='op'>)</span></span></code></pre>
+</div>
+</div>
+<p><strong>OR</strong>, alternatively, you can use the infer method to do it much quicker:</p>
+<div class="layout-chunk" data-layout="l-body">
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span><span class='va'>ATE_Infer</span> <span class='op'>&lt;-</span> <span class='va'>data_here</span> <span class='op'>|&gt;</span></span>
+<span>  <span class='fu'><a href='https://infer.tidymodels.org/reference/specify.html'>specify</a></span><span class='op'>(</span><span class='va'>dependent_var</span> <span class='op'>~</span> <span class='va'>independent_var</span><span class='op'>)</span> <span class='op'>|&gt;</span></span>
+<span>  <span class='co'>##specify the relation you're trying to test, the dependent variable, then tilde, then the independent var!</span></span>
+<span>  <span class='fu'><a href='https://infer.tidymodels.org/reference/calculate.html'>calculate</a></span><span class='op'>(</span><span class='st'>"diff in means"</span>, order <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>"Treated"</span>, <span class='st'>"Control"</span><span class='op'>)</span><span class='op'>)</span></span>
+<span>  <span class='co'>##calculate the order in which you want to calculate the differnece, usually it's treated - control.</span></span></code></pre>
+</div>
+</div>
+<h2 id="permutation-tests-confidence-intervals-and-statistical-significance">Permutation Tests, Confidence Intervals, and Statistical Significance</h2>
+<p>A <strong>permutation</strong> test evaluates whether or not the null hypothesis is reasonable. Essentially, a permutation test randomly switches the label on each piece of data to either put it in the control or treatment group despite whether or not it is actually a member of that category. Then, it determines whether or not their is a trend in each group. If there is not a trend, then then null hypothesis is likely false because the original result cannot be recreated through randomization.</p>
+<p>Performing a permutation test is easy:</p>
+<p>again, make sure you’ve loaded infer:</p>
+<div class="layout-chunk" data-layout="l-body">
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span><span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='va'><a href='https://github.com/tidymodels/infer'>infer</a></span><span class='op'>)</span></span></code></pre>
+</div>
+</div>
+<p>then, we can use the same framework established earlier, instead specifying a permutation test. Another way to clarify we want a permutation test is when one is asked to visualize the <strong>null distribution</strong>, which is the end result of a permutation test.</p>
+<div class="layout-chunk" data-layout="l-body">
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span><span class='va'>null_dist</span> <span class='op'>&lt;-</span> <span class='va'>data_here</span> <span class='op'>|&gt;</span></span>
+<span>  <span class='fu'><a href='https://infer.tidymodels.org/reference/specify.html'>specify</a></span><span class='op'>(</span><span class='va'>dependent_var</span> <span class='op'>~</span> <span class='va'>independent_var</span><span class='op'>)</span> <span class='op'>|&gt;</span></span>
+<span>  <span class='fu'><a href='https://infer.tidymodels.org/reference/hypothesize.html'>hypothesize</a></span><span class='op'>(</span>null <span class='op'>=</span> <span class='st'>"independence"</span><span class='op'>)</span> <span class='op'>|&gt;</span></span>
+<span>  <span class='co'>##because we're trying to test if one variable has an effect on the other, the null hypothesis, if there is no relation,        would be that they are independent.</span></span>
+<span>  <span class='fu'><a href='https://infer.tidymodels.org/reference/generate.html'>generate</a></span><span class='op'>(</span>reps <span class='op'>=</span> <span class='fl'>1000</span>, type <span class='op'>=</span> <span class='st'>"permute"</span><span class='op'>)</span> <span class='op'>|&gt;</span></span>
+<span>  <span class='co'>##specify that we want a PERMUTATION test</span></span>
+<span>  <span class='fu'><a href='https://infer.tidymodels.org/reference/calculate.html'>calculate</a></span><span class='op'>(</span>stat <span class='op'>=</span> <span class='st'>"diff in means"</span>, order <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>"Treated"</span>, <span class='st'>"Control"</span><span class='op'>)</span><span class='op'>)</span></span></code></pre>
+</div>
+</div>
+<p>if we want, we can even <strong>visualize</strong> what the null distribution looks like:</p>
+<div class="layout-chunk" data-layout="l-body">
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span><span class='va'>null_dist</span> <span class='op'>|&gt;</span></span>
+<span>   <span class='fu'><a href='https://infer.tidymodels.org/reference/visualize.html'>visualize</a></span><span class='op'>(</span><span class='op'>)</span></span></code></pre>
+</div>
+<p><img src="index_files/figure-html5/unnamed-chunk-12-1.png" width="624" /></p>
+</div>
+<p>to test if there is a statistically significant relationship in our data, we would calculate a p-value to see how likely our data is to result in null distribution. If the p-value is less than our significance level (alpha) we would <strong>REJECT</strong> our null hypothesis, basically meaning there it is very unikely for there to <strong>not</strong> be a signficiant relation between the variables being tested.</p>
+<div class="layout-chunk" data-layout="l-body">
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span><span class='va'>ate_pval</span> <span class='op'>&lt;-</span> <span class='va'>null_dist</span> <span class='op'>|&gt;</span></span>
+<span>  <span class='fu'><a href='https://infer.tidymodels.org/reference/get_p_value.html'>get_p_value</a></span><span class='op'>(</span>obs_stat <span class='op'>=</span> <span class='va'>ATE_Infer</span>, direction <span class='op'>=</span> <span class='st'>"both"</span><span class='op'>)</span></span></code></pre>
 </div>
 </div>
 <div class="sourceCode" id="cb1"><pre class="sourceCode r distill-force-highlighting-css"><code class="sourceCode r"></code></pre></div>
